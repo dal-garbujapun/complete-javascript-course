@@ -4,10 +4,9 @@ const btn = document.querySelector(".btn-country");
 const countriesContainer = document.querySelector(".countries");
 
 ///////////////////////////////////////
-const renderCountry = function (country) {
-  // console.log(country);
+const renderCountry = function (country, className = "") {
   const html = `
-        <article class="country ">
+        <article class="country ${className}">
           <img class="country__img" src="${country.flag}" />
           <div class="country__data">
             <h3 class="country__name">${country.name}</h3>
@@ -32,10 +31,14 @@ const getCountryData = function (country) {
   fetch(`https://restcountries.com/v2/name/${country}`)
     .then((response) => response.json())
     .then((data) => {
-      // console.log(data);
+      console.log(data);
       renderCountry(data[0]);
-    });
+
+      const neighbour = data[0].borders[0];
+      return fetch(`https://restcountries.com/v2/alpha/${neighbour}`);
+    })
+    .then((response) => response.json())
+    .then((data) => renderCountry(data, "neighbour"));
 };
 
 getCountryData("nepal");
-getCountryData("australia");
