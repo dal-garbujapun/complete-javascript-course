@@ -5,20 +5,70 @@ const countriesContainer = document.querySelector(".countries");
 
 ///////////////////////////////////////
 
-console.log("Test start");
-// fire timer exactly after 0 sec which will be put on the callback queue
-setTimeout(() => console.log("0 sec timer"), 0);
-// promise that resolves immediately - with a fullfilled value
-Promise.resolve("Resolved promise 1").then((res) => console.log(res));
-console.log("Test end");
+// building promise
+// const lotteryPromise = new Promise(function (resolve, reject) {
+//   if (Math.random() >= 0.5) {
+//     resolve("YOU WIN! 😁");
+//   } else {
+//     reject("YOU LOST! 😭");
+//   }
+// });
 
-// Order in which these 4 messages will be logged into the console
-// 1. Test start
-// 2. Test end
-// 3. Resolved promise 1 // micro task queue has priority over the callback queue
-// 4. 0 sec timer // callback queue
+// // consuming promise
+// lotteryPromise
+//   .then((res) => console.log(res))
+//   .catch((res) => console.error(res));
 
-// implications: promise micro task queue can create starvation
+///////////////////////////////////////////////////////////////////////////////
+// simulate the time that is passed betn buying lottery ticket and getting the
+// result to encapsulate asynchoronous behaviour into a promise
+// building promise
+const lotteryPromise = new Promise(function (resolve, reject) {
+  console.log("Lottery draw is happening!!!");
+  setTimeout(() => {
+    if (Math.random() >= 0.5) {
+      resolve("YOU WIN!!! 😁");
+    } else {
+      reject(new Error("YOU LOST! 😭"));
+    }
+  }, 2000);
+});
 
-// we cannot do high precision things using JavaScript Timers
-// when dealing with promises (microtask queue) and timers (callback queue)
+// consuming promise
+lotteryPromise
+  .then((res) => console.log(res))
+  .catch((res) => console.error(res));
+
+///////////////////////////////////////////////////////////////////////////////
+// Promisifying the setTimeout
+// (callback based asynchronous to promised based asynchronous)
+//
+// just like fetch is a function that returns a promise, here we're creating
+// a function that returns a promise
+const wait = function (seconds) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, seconds * 1000); // we don't need any value
+  });
+};
+
+// consuming
+wait(1)
+  .then(() => {
+    console.log("I waited for 1 seconds");
+    return wait(1);
+  })
+  .then(() => {
+    console.log("I waited for 2 seconds");
+    return wait(1);
+  })
+  .then(() => {
+    console.log("I waited for 3 seconds");
+  });
+
+////////////////////////////////////////////////////////////////////////////////
+// Fullfilling or rejecting promise immediately
+
+Promise.resolve("Insta Fullfilled!").then((res) => console.log(res));
+Promise.reject(new Error("Insta Rejection!")).catch((res) =>
+  console.error(res)
+);
