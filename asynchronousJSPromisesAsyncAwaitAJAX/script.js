@@ -3,6 +3,11 @@
 const btn = document.querySelector(".btn-country");
 const countriesContainer = document.querySelector(".countries");
 
+const renderError = function (errorMsg) {
+  countriesContainer.insertAdjacentText("beforeend", errorMsg);
+  countriesContainer.style.opacity = 1;
+};
+
 const renderCountry = function (country, className = "") {
   const html = `
         <article class="country ${className}">
@@ -36,22 +41,29 @@ const getPosition = function () {
   });
 };
 const whereAmI = async function (country) {
-  //geolocation
-  const geolocationPosition = await getPosition();
-  const { latitude: lat, longitude: lng } = geolocationPosition.coords;
+  try {
+    //geolocation
+    const geolocationPosition = await getPosition();
+    const { latitude: lat, longitude: lng } = geolocationPosition.coords;
 
-  // reverse geocode
-  const response = await fetch(
-    `https://geocode.xyz/${lat},${lng}?geoit=json&auth=119352132948252e15838634x3713`
-  );
-  const geocodeData = await response.json();
+    // reverse geocode
+    const response = await fetch(
+      `https://geocode.xyz/${lat},${lng}?geoit=json&auth=119352132948252e15838634x3713`
+    );
+    if (!response.ok) throw new Error("Problem getting location data");
+    const geocodeData = await response.json();
 
-  // country data
-  const res = await fetch(
-    `https://restcountries.com/v2/name/${geocodeData.country}`
-  );
-  const data = await res.json();
-  renderCountry(data[0]);
+    // country data
+    const res = await fetch(
+      `https://restcountries.com/v2/name/${geocodeData.country}`
+    );
+    if (!res.ok) throw new Error("Problem getting country");
+    const data = await res.json();
+    renderCountry(data[0]);
+  } catch (e) {
+    console.error(e);
+    renderError(e.message);
+  }
 };
 
 whereAmI();
