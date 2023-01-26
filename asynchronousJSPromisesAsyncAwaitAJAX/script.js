@@ -48,21 +48,24 @@ const whereAmI = async function (country) {
 
     // reverse geocode
     const response = await fetch(
-      `https://geocode.xyz/${lat},${lng}?geoit=json&auth=119352132948252e15838634x3713`
+      // `https://geocode.xyz/${lat},${lng}?geoit=json&auth=119352132948252e15838634x3713`
+      // `https://geocode.xyz/${lat},${lng}?json`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
     );
+
     if (!response.ok) throw new Error("Problem getting location data");
     const geocodeData = await response.json();
 
     // country data
     const res = await fetch(
-      `https://restcountries.com/v2/name/${geocodeData.country}`
+      `https://restcountries.com/v2/name/${geocodeData.address.country}`
     );
-    console.log(res);
+
     if (!res.ok) throw new Error("Problem getting country");
     const data = await res.json();
     renderCountry(data[0]);
 
-    return `You are in ${geocodeData.city}, ${geocodeData.country}`;
+    return `You are in ${geocodeData.display_name}`;
   } catch (e) {
     console.error(e);
     renderError(e.message);
