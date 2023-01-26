@@ -1,94 +1,40 @@
-"use strict";
-
-const btn = document.querySelector(".btn-country");
-const countriesContainer = document.querySelector(".countries");
-
-const renderError = function (errorMsg) {
-  countriesContainer.insertAdjacentText("beforeend", errorMsg);
-  countriesContainer.style.opacity = 1;
-};
-
-const renderCountry = function (country, className = "") {
-  const html = `
-        <article class="country ${className}">
-          <img class="country__img" src="${country.flag}" />
-          <div class="country__data">
-            <h3 class="country__name">${country.name}</h3>
-            <h4 class="country__region">${country.region}</h4>
-            <p class="country__row"><span>👫</span>${
-              +country.population > 1000000
-                ? (+country.population / 1000000).toFixed(1)
-                : +country.population
-            } people</p>
-            <p class="country__row"><span>🗣️</span>${
-              country.languages[0].name
-            }</p>
-            <p class="country__row"><span>💰</span>${
-              country.currencies[0].name
-            }</p>
-          </div>
-        </article>
-  `;
-  countriesContainer.insertAdjacentHTML("beforeend", html);
-  countriesContainer.style.opacity = 1;
-};
-const getPosition = function () {
-  return new Promise(function (resolve, reject) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => resolve(position),
-      (error) => reject(error)
-    );
+const getJSON = function (url, errMsg = "Ooops, something went wrong! ") {
+  return fetch(url).then((response) => {
+    if (!response.ok) throw new Error(errMsg);
+    return response.json();
   });
 };
-const whereAmI = async function (country) {
+
+const getCapitalOf = async function (c1, c2, c3) {
   try {
-    //geolocation
-    const geolocationPosition = await getPosition();
-    const { latitude: lat, longitude: lng } = geolocationPosition.coords;
+    // const [country1Data] = await getJSON(
+    //   `https://restcountries.com/v2/name/${c1}`
+    // );
 
-    // reverse geocode
-    const response = await fetch(
-      // `https://geocode.xyz/${lat},${lng}?geoit=json&auth=119352132948252e15838634x3713`
-      // `https://geocode.xyz/${lat},${lng}?json`
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-    );
+    // const [country2Data] = await getJSON(
+    //   `https://restcountries.com/v2/name/${c2}`
+    // );
 
-    if (!response.ok) throw new Error("Problem getting location data");
-    const geocodeData = await response.json();
+    // const [country3Data] = await getJSON(
+    //   `https://restcountries.com/v2/name/${c3}`
+    // );
 
-    // country data
-    const res = await fetch(
-      `https://restcountries.com/v2/name/${geocodeData.address.country}`
-    );
+    // console.log([
+    //   country1Data.capital,
+    //   country2Data.capital,
+    //   country3Data.capital,
+    // ]);
 
-    if (!res.ok) throw new Error("Problem getting country");
-    const data = await res.json();
-    renderCountry(data[0]);
-
-    return `You are in ${geocodeData.display_name}`;
-  } catch (e) {
-    console.error(e);
-    renderError(e.message);
-
-    // Reject promise returned from async function
-    throw e;
+    // parallel access
+    const data = await Promise.all([
+      getJSON(`https://restcountries.com/v2/name/${c1}`),
+      getJSON(`https://restcountries.com/v2/name/${c2}`),
+      getJSON(`https://restcountries.com/v2/name/${c3}`),
+    ]);
+    console.log(data.map((country) => console.log(country[0].capital)));
+  } catch (error) {
+    console.error(error);
   }
 };
 
-console.log("1: Will get location");
-// const city = whereAmI();
-// console.log(city);
-// whereAmI()
-//   .then((city) => console.log(`2: ${city}`))
-//   .catch((err) => console.error(`2: ${err.message}`))
-//   .finally(() => console.log("3: Finished getting location"));
-
-(async function () {
-  try {
-    const city = await whereAmI();
-    console.log(`2: ${city}`);
-  } catch (e) {
-    console.error(`2: ${e.message}`);
-  }
-  console.log("3: Finished getting location");
-})();
+getCapitalOf("nepal", "australia", "japan");
